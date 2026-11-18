@@ -1,0 +1,55 @@
+name: deploy-docs
+
+# Nightly: crates.io metadata refreshes. Push: generator/config changes.
+# The estate-portal Pages site must be enabled once (done via owner API).
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "portal.toml"
+      - ".github/workflows/deploy-docs.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: install docs-compiler (published crate, pinned)
+        run: cargo install --locked --version 0.7.3 docs-compiler
+      - name: generate the portal content
+        run: python3 scripts/gen_pages.py
+      - name: build the site
+        run: |
+          docs-compiler build content --out _site --base-path /estate-portal
+          test -f _site/search.json
+          test -f _site/search.bin
+          test -f _site/llms.txt
+          test -f _site/atom.xml
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

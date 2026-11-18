@@ -11,6 +11,7 @@ bytes, so nightly runs diff cleanly.
 import json
 import sys
 import time
+import tomllib
 import urllib.request
 from pathlib import Path
 
@@ -20,15 +21,24 @@ UA = "estate-portal/0.1 (wyatt_au@protonmail.com)"
 CRATES_API = "https://crates.io/api/v1/crates"
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "content"
-ESTATE_YML = "https://raw.githubusercontent.com/WyattAu/engineering-standards/main/estate.yml"
 
+# portal.toml (repo root) is the single config point; every value flows
+# into the generated content/site.toml.
+_config_path = ROOT / "portal.toml"
+_config = (
+    tomllib.loads(_config_path.read_text())
+    if _config_path.exists()
+    else {}
+)
+ESTATE_YML = _config.get(
+    "estate_yml",
+    "https://raw.githubusercontent.com/WyattAu/engineering-standards/main/estate.yml",
+)
 SITE = {
-    "base_url": "https://wyattau.github.io/estate-portal",
-    "base_path": "/estate-portal",
-    "site_title": "WyattAu Estate",
-    "author": "Wyatt",
-    "ai_crawlers": "allow",
-    "og_image": "https://wyattau.github.io/estate-portal/og.png",
+    "base_url": _config.get("base_url", "https://wyattau.github.io/estate-portal"),
+    "site_title": _config.get("site_title", "WyattAu Estate"),
+    "author": _config.get("author", "Wyatt"),
+    "ai_crawlers": _config.get("ai_crawlers", "allow"),
 }
 
 
@@ -130,8 +140,12 @@ def main() -> None:
     (OUT / "index.md").write_text("\n".join(lines), encoding="utf-8")
 
     # site config for docs-compiler (base_path = project Pages subpath).
-    config_lines = [f"{k} = {json.dumps(v)}" for k, v in SITE.items()]
-    config_lines.append(f"base_path = {json.dumps('/estate-portal')}")
+    config_lines = [
+        f"{k} = {json.dumps(v)}" for k, v in {
+            **SITE,
+            "base_path": _config.get("base_path", "/estate-portal"),
+        }.items()
+    ]
     (OUT / "site.toml").write_text("\n".join(config_lines) + "\n", encoding="utf-8")
 
     print(f"published pages: {len(published)}, skipped (unpublished): {len(skipped)}")

@@ -1,0 +1,13 @@
+# Estate portal configuration — consumed by scripts/gen_pages.py.
+# The docs-compiler build reads content/site.toml (generated from this).
+
+# The registry of record (engineering-standards, main branch).
+estate_yml = "https://raw.githubusercontent.com/WyattAu/engineering-standards/main/estate.yml"
+
+# Pages hosting (project site, served under the repo-name subpath).
+base_url = "https://wyattau.github.io/estate-portal"
+base_path = "/estate-portal"
+
+site_title = "WyattAu Estate"
+author = "Wyatt"
+ai_crawlers = "allow"

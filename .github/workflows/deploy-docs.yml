@@ -37,7 +37,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: install docs-compiler (published crate, pinned)
-        run: cargo install --locked --version 0.7.3 docs-compiler
+        run: cargo install --locked --version 0.7.5 docs-compiler
       - name: generate the portal content
         run: python3 scripts/gen_pages.py
       - name: build the site

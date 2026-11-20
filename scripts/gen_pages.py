@@ -135,16 +135,17 @@ def main() -> None:
         lines.append(f"## {area}")
         lines.append("")
         for entry in sorted(by_area[area], key=lambda e: e["name"]):
-            lines.append(f"- [{entry['name']}](/{entry['name']}.html) — {entry['description'][:100]}")
+            lines.append(f"- [{entry['name']}](/{entry['name']}.html) - {entry['description'][:100]}")
         lines.append("")
     (OUT / "index.md").write_text("\n".join(lines), encoding="utf-8")
 
-    # site config for docs-compiler (base_path = project Pages subpath).
+    # site config for docs-compiler (base_path = project Pages subpath;
+    # accent passes through when portal.toml declares one).
+    site_fields = {**SITE, "base_path": _config.get("base_path", "/estate-portal")}
+    if accent := _config.get("accent"):
+        site_fields["accent"] = accent
     config_lines = [
-        f"{k} = {json.dumps(v)}" for k, v in {
-            **SITE,
-            "base_path": _config.get("base_path", "/estate-portal"),
-        }.items()
+        f"{k} = {json.dumps(v)}" for k, v in site_fields.items()
     ]
     (OUT / "site.toml").write_text("\n".join(config_lines) + "\n", encoding="utf-8")
 

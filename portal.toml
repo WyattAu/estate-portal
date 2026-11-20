@@ -5,9 +5,10 @@
 estate_yml = "https://raw.githubusercontent.com/WyattAu/engineering-standards/main/estate.yml"
 
 # Pages hosting (project site, served under the repo-name subpath).
-base_url = "https://wyattau.github.io/estate-portal"
+base_url = "https://wyattau.github.io"
 base_path = "/estate-portal"
 
 site_title = "WyattAu Estate"
 author = "Wyatt"
 ai_crawlers = "allow"
+accent = "#a78bfa"
